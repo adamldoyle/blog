@@ -1,0 +1,90 @@
+{% extends "blog/defaults/blog.html" %}
+{% load markup %}
+{% block content %}
+
+<div class="blog_entry_detail">
+	{% if entry.show_date %}
+		<h5 class="entry_time">{{ entry.created_at|date:"l, F d, Y f A" }}</h5>
+	{% endif %}
+	<div class="entry_content">{{ entry.post|markdown }}</div>
+	{% if entry.allow_comments %}
+		<a name="comments"></a>
+		{% if entry.comment_set.all %}
+			<h4 class="comment_title">Comments</h4>
+			{% for comment in entry.comment_set.all %}
+				<div class="comment_block">
+					{{ comment.post|markdown:"safe" }}
+					<h5 class="comment_specs">
+						{% if comment.posted_by %}
+							{% ifequal comment.posted_by user %}
+								<a href="{{ entry_url }}?edit={{ comment.id }}">Edit</a>
+								<a href="{{ entry_url }}?delete={{ comment.id }}">Delete</a>
+							{% else %}
+								{% if perms.blog.change_comment %}
+									<a href="{{ entry_url }}?edit={{ comment.id }}">Edit</a>
+								{% endif %}
+								{% if perms.blog.delete_comment %}
+									<a href="{{ entry_url }}?delete={{ comment.id }}">Delete</a>
+								{% endif %}
+							{% endifequal %}
+							Posted by <span>{{ comment.posted_by }}</span>
+						{% else %}
+							{% if perms.blog.change_comment %}
+								<a href="{{ entry_url }}?edit={{ comment.id }}">Edit</a>
+							{% endif %}
+							{% if perms.blog.delete_comment %}
+								<a href="{{ entry_url }}?delete={{ comment.id }}">Delete</a>
+							{% endif %}
+							Posted by <span>{{ comment.posted_by_name }}</span>
+						{% endif %}
+						on
+						{{ comment.created_at|date:"n-d-Y" }} at {{ comment.created_at|date:"f A" }}
+					</h5>
+				</div>
+			{% endfor %}
+		{% endif %}
+		{% if new_comment %}
+			<h4 class="comment_title">{% trans 'Leave a comment...' %}</h4>
+			<span class="note">
+				{% trans 'You can use <a href="http://daringfireball.net/projects/markdown/syntax" target="_new">markdown</a> notation; however, any HTML will be removed.' %}
+			</span>
+			<form action="{% url blog.views.comment entry.id %}" method="post">
+				{% if comment_id %}
+					<input type="hidden" name="comment_id" value="{{ comment_id }}"/>
+				{% endif %}
+				{% if not user.is_authenticated %}
+					<div class="formwrapper">
+						<div class="formlabel">&nbsp;</div>
+						<div class="forminput">
+							Please <a href="{% url django.contrib.auth.views.login %}">login</a> to comment	{% if new_comment.posted_by_name %}or post as a guest{% endif %}.
+						</div>
+					</div>
+				{% endif %}
+				{% if not user.is_authenticated and new_comment.posted_by_name %}
+					<div class="formwrapper">
+						<div class="formlabel">{% trans 'Name:' %}</div>
+						<div class="forminput">{{ new_comment.posted_by_name }}</div>
+					</div>
+				{% endif %}
+				<div class="formwrapper">
+					{% if not user.is_authenticated and new_comment.posted_by_name %}
+						<div class="formlabel">&nbsp;</div>
+					{% endif %}
+					<div class="forminput">{{ new_comment.post }}</div>
+				</div>
+				<div class="formwrapper">
+					{% if not user.is_authenticated and new_comment.posted_by_name %}
+						<div class="formlabel">&nbsp;</div>
+					{% endif %}
+					<div class="forminput"><input type="submit" value="{% trans 'Save Comment' %}"/></div>
+				</div>
+			</form>
+		{% else %}
+			{% if entry.allow_comments %}
+				<span class="note">{% trans 'You must be logged in to leave a comment.' %}</span>
+			{% endif %}
+		{% endif %}
+	{% endif %}
+</div>
+
+{% endblock %}

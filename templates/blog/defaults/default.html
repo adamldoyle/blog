@@ -1,0 +1,39 @@
+{% extends "blog/defaults/blog.html" %}
+{% load i18n %}
+{% load markup %}
+{% block content %}
+
+{% if entries %}
+	{% for entry in entries %}
+		{% ifchanged entry.date_posted.date %}
+			<h3 class="blog_date">{{ entry.created_at.date|date:"l, F d, Y" }}</h3>
+		{% endifchanged %}
+		<div class="blog_entry">
+			<h4 class="entry_title"><a href="{{ entry.get_absolute_url }}">{{ entry.title }}</a></h4>
+			<h5 class="entry_time">by {{ entry.user }}{% if entry.show_date %} at {{ entry.created_at.time|time:"f A" }}{% endif %}.</h5>
+			<div class="entry_blurb">{{ entry.post|markdown }}</div>
+			<div class="entry_specs">
+				{% if entry.allow_comments %}
+					<b>{% trans 'Comments:' %}</b> (<span class="entry_spec"><a href="{{ entry.get_absolute_url }}#comments">{{ entry.num_comments }}</a></span>).
+				{% endif %}
+				{% if entry.category %}
+					<b>{% trans 'Category:' %}</b> (<span class="entry_spec"><a href="{% url blog.views.by_category entry.category.id %}">{{ entry.category }}</a></span>).
+				{% endif %}
+				{% if entry.tags.all %}
+					<b>{% trans 'Tags:' %}</b> (<span class="entry_spec">{% for tag in entry.tags.all %}<a href="{% url blog.views.by_tag tag.id %}">{{ tag.tag }}</a>{% if not forloop.last %},{% endif %}{% endfor %}</span>)
+				{% endif %}
+			</div>
+		</div>
+	{% endfor %}
+{% else %}
+	{% trans 'No entries.' %}
+{% endif %}
+
+{% if has_prev %}
+	<a href="?p={{ has_prev }}">&lt;&lt; {% trans 'Prev' %}</a>
+{% endif %}
+{% if has_next %}
+	<a href="?p={{ has_next }}">{% trans 'Next' %} &gt;&gt;</a>
+{% endif %}
+
+{% endblock %}

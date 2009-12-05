@@ -1,0 +1,41 @@
+{% extends "layout/base_site.html" %}
+{% load i18n %}
+{% load blog_extras %}
+
+{% block bodyclass %}colMS{% endblock %}
+
+{% block sectitle %}{% trans 'News' %} |{% endblock %}
+
+{% block extrahead %}
+<link rel="stylesheet" type="text/css" media="screen" href="{{ MEDIA_URL }}css/blog.css" />
+{% endblock %}
+
+{% block rightpanel %}
+
+	{% if user.is_staff %}
+		<ul class="rightnav">
+			<li class="header">{% trans 'Admin' %}</li>
+			<li><a href="{% url admin:index %}">{% trans 'Index' %}</a></li>
+			{% if perms.djudge.add_status and add_status %}
+				<li><a href="#add_status_form" class="add_status_link">{% trans 'Change status' %}</a></li>
+			{% endif %}
+		</ul>
+	{% endif %}
+	
+	<ul class="rightnav">
+		<li class="header">{% trans 'Blog Archives' %}</li>
+		{% blog_archives as blog_archives %}
+		{% if blog_archives %}
+			{% for archive in blog_archives %}
+				{% ifchanged archive.year %}
+					{% if not forloop.first %}</ul></li>{% endif %}<li><a href="{% url blog.views.archive_year archive.year %}">{{ archive.year }}</a><ul>
+				{% endifchanged %}
+				<li><a href="{% url blog.views.archive_month archive.year archive.month %}">{{ archive.month_name }} ({{ archive.num_entries }})</a></li>
+			{% endfor %}
+			</ul></li>
+		{% else %}
+			<li class="note">{% trans 'Nothing archived.' %}</li>
+		{% endif %}
+	</ul>
+
+{% endblock %}
