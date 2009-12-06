@@ -11,6 +11,7 @@ class EntryCategory(models.Model):
     
     class Meta:
         ordering = ('category',)
+        verbose_name_plural = 'Entry Categories'
     
     def __unicode__(self):
         return u"%s" %self.category
@@ -48,6 +49,7 @@ class Entry(SlugMixin, UserMixin, DateMixin):
 
     class Meta:
         ordering = ('order', '-created_at',)
+        verbose_name_plural = 'Entries'
     
     def __unicode__(self):
         return u"%s" %self.title
